@@ -37,6 +37,9 @@ class JsonWidget extends StatefulWidget {
   /// {@macro node.hiddenKeys}
   final List<String> hiddenKeys;
 
+  /// Called when the user double-taps a node.
+  final void Function(JsonNode node)? onDoubleTap;
+
   /// Called when the user long-presses a node.
   final void Function(JsonNode node)? onLongPress;
 
@@ -98,6 +101,7 @@ class JsonWidget extends StatefulWidget {
     this.controller,
     this.json,
     List<String> hiddenKeys = const [],
+    this.onDoubleTap,
     this.onLongPress,
     this.initialExpandDepth = -1,
     this.expandIcon = const Icon(Icons.keyboard_arrow_down),
@@ -380,6 +384,9 @@ class _JsonWidgetState extends State<JsonWidget>
     return JsonNodeWidget(
       node: node,
       hiddenKeys: widget.hiddenKeys,
+      onDoubleTap: widget.onDoubleTap != null
+          ? () => widget.onDoubleTap?.call(node)
+          : null,
       onLongPress: widget.onLongPress != null
           ? () => widget.onLongPress?.call(node)
           : null,

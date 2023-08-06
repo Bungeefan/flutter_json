@@ -17,6 +17,9 @@ class JsonNodeWidget extends StatelessWidget {
   /// Called when the node is toggled (pressed).
   final void Function(bool expanded) onToggle;
 
+  /// Called when the user double-taps this node.
+  final VoidCallback? onDoubleTap;
+
   /// Called when the user long-presses this node.
   final VoidCallback? onLongPress;
 
@@ -92,6 +95,7 @@ class JsonNodeWidget extends StatelessWidget {
     required this.node,
     required this.hiddenKeys,
     required this.onToggle,
+    this.onDoubleTap,
     this.onLongPress,
     required this.minHeight,
     required this.nodeIndent,
@@ -132,6 +136,7 @@ class JsonNodeWidget extends StatelessWidget {
                 onToggle.call(node.expanded);
               }
             : null,
+        onDoubleTap: !isHidden ? onDoubleTap : null,
         onLongPress: !isHidden ? onLongPress : null,
         child: ConstrainedBox(
           constraints: BoxConstraints(minHeight: minHeight),
