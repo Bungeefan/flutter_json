@@ -198,10 +198,13 @@ class _JsonWidgetState extends State<JsonWidget>
 
   void _processJson() {
     indices.clear();
-    future = compute((args) => JsonParser().parseTree(args), {
-      "json": widget.json,
-      "initialDepth": widget.initialExpandDepth,
-    }).then((value) {
+    future = compute<Map<String, Object>, Map<String, dynamic>>(
+      (args) => JsonParser().parseTree(args),
+      {
+        "json": widget.json,
+        "initialDepth": widget.initialExpandDepth,
+      },
+    ).then((value) {
       root = value["tree"];
       maxDepth = value["maxDepth"];
     }).catchError((error, stackTrace) {
