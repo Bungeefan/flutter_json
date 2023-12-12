@@ -1,3 +1,7 @@
+## 0.0.3
+
+* Added `primary` and `physics` parameter.
+
 ## 0.0.2
 
 * Added `onDoubleTap` callback.
