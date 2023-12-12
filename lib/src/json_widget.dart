@@ -28,6 +28,12 @@ import 'model/value_type.dart';
 /// )
 /// ```
 class JsonWidget extends StatefulWidget {
+  /// {@macro flutter.widgets.scroll_view.primary}
+  final bool? primary;
+
+  /// {@macro flutter.widgets.scroll_view.physics}
+  final ScrollPhysics? physics;
+
   /// Controller to expand or collapse nodes.
   final JsonController? controller;
 
@@ -98,6 +104,8 @@ class JsonWidget extends StatefulWidget {
   /// Creates a [JsonWidget].
   JsonWidget({
     super.key,
+    this.primary,
+    this.physics,
     this.controller,
     this.json,
     List<String> hiddenKeys = const [],
@@ -348,6 +356,7 @@ class _JsonWidgetState extends State<JsonWidget>
               controller: _scrollController,
               scrollbarOrientation: ScrollbarOrientation.bottom,
               child: SingleChildScrollView(
+                physics: widget.physics,
                 controller: _scrollController,
                 scrollDirection: Axis.horizontal,
                 child: SizedBox(
@@ -357,6 +366,11 @@ class _JsonWidgetState extends State<JsonWidget>
                           widget.additionalLeafIndent +
                           750),
                   child: CustomScrollView(
+                    primary: widget.primary,
+                    physics: widget.physics,
+                    // https://github.com/flutter/flutter/issues/52681
+                    // scrollBehavior: ScrollConfiguration.of(context)
+                    //     .copyWith(scrollbars: true),
                     slivers: [
                       SliverList(
                         delegate: SliverChildBuilderDelegate(
