@@ -3,8 +3,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_json/src/json_controller.dart';
 
+import 'json_controller.dart';
 import 'json_node_widget.dart';
 import 'json_parser.dart';
 import 'model/json_node.dart';

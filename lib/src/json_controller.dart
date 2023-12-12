@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
-import 'package:flutter_json/src/json_widget.dart';
+
+import 'json_widget.dart';
 
 /// A controller for the [JsonWidget] widget.
 class JsonController {
