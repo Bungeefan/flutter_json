@@ -15,6 +15,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: "Flutter JSON Demo",
       theme: ThemeData(),
+      darkTheme: ThemeData.dark(),
       home: const MyHomePage(),
     );
   }
