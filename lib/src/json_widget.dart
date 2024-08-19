@@ -346,7 +346,7 @@ class _JsonWidgetState extends State<JsonWidget>
             Widget child = Center(
               child: snapshot.hasError
                   ? const Text("Error while analyzing the json")
-                  : const CircularProgressIndicator(),
+                  : const CircularProgressIndicator.adaptive(),
             );
             return child;
           }
