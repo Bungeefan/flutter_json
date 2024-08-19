@@ -11,6 +11,12 @@ import 'model/json_node.dart';
 import 'model/tree_path.dart';
 import 'model/value_type.dart';
 
+typedef JsonErrorWidgetBuilder = Widget Function(
+  BuildContext context,
+  Object error,
+  StackTrace stackTrace,
+);
+
 /// A widget that renders JSON data as an interactive hierarchical tree structure.
 ///
 /// The JSON data is parsed into a tree structure and rendered as a list of nested
@@ -101,6 +107,12 @@ class JsonWidget extends StatefulWidget {
   /// {@macro node.hiddenColor}
   final Color hiddenColor;
 
+  /// A builder that specifies the widget shown while loading the json.
+  final WidgetBuilder? loadingBuilder;
+
+  /// A builder that is called if an error occurred while loading the json.
+  final JsonErrorWidgetBuilder? errorBuilder;
+
   /// Creates a [JsonWidget].
   JsonWidget({
     super.key,
@@ -127,6 +139,8 @@ class JsonWidget extends StatefulWidget {
     this.objectColor = Colors.grey,
     this.noneColor = Colors.grey,
     this.hiddenColor = const Color(0xFFBB5BC3),
+    this.loadingBuilder,
+    this.errorBuilder,
   }) : hiddenKeys = hiddenKeys.map((e) => e.toLowerCase()).toList();
 
   @override
@@ -345,8 +359,11 @@ class _JsonWidgetState extends State<JsonWidget>
               snapshot.hasError) {
             Widget child = Center(
               child: snapshot.hasError
-                  ? const Text("Error while analyzing the json")
-                  : const CircularProgressIndicator.adaptive(),
+                  ? widget.errorBuilder?.call(
+                          context, snapshot.error!, snapshot.stackTrace!) ??
+                      const Text("Error while analyzing the json")
+                  : widget.loadingBuilder?.call(context) ??
+                      const CircularProgressIndicator.adaptive(),
             );
             return child;
           }
