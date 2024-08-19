@@ -1,3 +1,8 @@
+## 0.0.4
+
+* Added optional `loadingBuilder` and `errorBuilder` to allow custom loading and error widgets.
+* Switched default progress indicator to `adaptive` style.
+
 ## 0.0.3
 
 * Added `primary` and `physics` parameter.
