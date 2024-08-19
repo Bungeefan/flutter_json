@@ -388,7 +388,7 @@ class _JsonWidgetState extends State<JsonWidget>
     );
   }
 
-  Widget? _buildNode(context, index) {
+  Widget? _buildNode(BuildContext context, int index) {
     // Fill indices until given index.
     fillIndices(index);
     if (index >= indices.length) {
