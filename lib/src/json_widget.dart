@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:math' as math;
 
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -159,18 +160,17 @@ class JsonWidget extends StatefulWidget {
   }) : hiddenKeys = hiddenKeys.map((e) => e.toLowerCase()).toList();
 
   @override
-  State<JsonWidget> createState() => _JsonWidgetState();
+  State<JsonWidget> createState() => JsonWidgetState();
 }
 
-class _JsonWidgetState extends State<JsonWidget>
+class JsonWidgetState extends State<JsonWidget>
     with AutomaticKeepAliveClientMixin {
   final ScrollController _scrollController = ScrollController();
+  late Future<void> _processingFuture;
+  final List<TreePath> _indices = [];
 
-  late JsonNode root;
-  late int maxDepth;
-
-  late Future<void> future;
-  final List<TreePath> indices = [];
+  late JsonNode _rootNode;
+  late int _maxDepth;
 
   @override
   bool get wantKeepAlive => true;
@@ -178,8 +178,8 @@ class _JsonWidgetState extends State<JsonWidget>
   @override
   void initState() {
     super.initState();
-    widget.controller?.expandNotifier.addListener(_expandAll);
-    widget.controller?.collapseNotifier.addListener(_collapseAll);
+    widget.controller?.expandNotifier.addListener(expandAll);
+    widget.controller?.collapseNotifier.addListener(collapseAll);
     _processJson();
   }
 
@@ -187,10 +187,10 @@ class _JsonWidgetState extends State<JsonWidget>
   void didUpdateWidget(covariant JsonWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.controller != oldWidget.controller) {
-      widget.controller?.expandNotifier.removeListener(_expandAll);
-      widget.controller?.collapseNotifier.removeListener(_collapseAll);
-      widget.controller?.expandNotifier.addListener(_expandAll);
-      widget.controller?.collapseNotifier.addListener(_collapseAll);
+      widget.controller?.expandNotifier.removeListener(expandAll);
+      widget.controller?.collapseNotifier.removeListener(collapseAll);
+      widget.controller?.expandNotifier.addListener(expandAll);
+      widget.controller?.collapseNotifier.addListener(collapseAll);
     }
     if (!const DeepCollectionEquality().equals(widget.json, oldWidget.json)) {
       _processJson();
@@ -199,8 +199,8 @@ class _JsonWidgetState extends State<JsonWidget>
 
   @override
   void dispose() {
-    widget.controller?.expandNotifier.removeListener(_expandAll);
-    widget.controller?.collapseNotifier.removeListener(_collapseAll);
+    widget.controller?.expandNotifier.removeListener(expandAll);
+    widget.controller?.collapseNotifier.removeListener(collapseAll);
     super.dispose();
   }
 
@@ -208,8 +208,8 @@ class _JsonWidgetState extends State<JsonWidget>
   ///
   /// Searches for the first collapsed node
   /// and drops every index after this node.
-  void _expandAll() {
-    List<JsonNode> list = root.collectChildren();
+  void expandAll() {
+    List<JsonNode> list = _rootNode.collectChildren();
     bool firstIndexFound = false;
     for (int i = 0; i < list.length; i++) {
       var node = list[i];
@@ -217,7 +217,7 @@ class _JsonWidgetState extends State<JsonWidget>
         firstIndexFound = true;
 
         // Drop indices higher than this index.
-        indices.removeRange(math.min(indices.length, i + 1), indices.length);
+        _indices.removeRange(math.min(_indices.length, i + 1), _indices.length);
       }
       node.expanded = true;
     }
@@ -227,30 +227,31 @@ class _JsonWidgetState extends State<JsonWidget>
   /// Collects all children and updates the expanded state.
   ///
   /// This method simply drops all indices.
-  void _collapseAll() {
-    root.collectChildren().forEach((node) => node.expanded = false);
-    indices.clear();
+  void collapseAll() {
+    _rootNode.collectChildren().forEach((node) => node.expanded = false);
+    _indices.clear();
     setState(() {});
   }
 
+  /// Processes the provided json.
   void _processJson() {
-    indices.clear();
-    future = compute<Map<String, Object>, Map<String, dynamic>>(
+    _indices.clear();
+    _processingFuture = compute<Map<String, Object>, Map<String, dynamic>>(
       (args) => JsonParser().parseTree(args),
       {
         "json": widget.json,
         "initialDepth": widget.initialExpandDepth,
       },
     ).then((value) {
-      root = value["tree"];
-      maxDepth = value["maxDepth"];
+      _rootNode = value["tree"];
+      _maxDepth = value["maxDepth"];
     }).catchError((error, stackTrace) {
       log("Failed to compute json", error: error, stackTrace: stackTrace);
       throw error;
     });
   }
 
-  /// Creates indices for the [JsonNode]s in [root].
+  /// Creates indices for the [JsonNode]s in [_rootNode].
   ///
   /// The system works like the following:
   ///
@@ -263,19 +264,19 @@ class _JsonWidgetState extends State<JsonWidget>
   /// The index cache is built and kept in memory
   /// as long as the model doesn't change and
   /// no expansion or a contraction happens.
-  void fillIndices(int? targetIndex) {
-    if (indices.isEmpty) {
+  void _fillIndices(int? targetIndex) {
+    if (_indices.isEmpty) {
       // Add root node.
-      indices.add(TreePath([0]));
+      _indices.add(TreePath([0]));
     }
 
-    TreePath startingPoint = indices.last;
-    while (targetIndex == null || indices.length <= targetIndex) {
+    TreePath startingPoint = _indices.last;
+    while (targetIndex == null || _indices.length <= targetIndex) {
       JsonNode? node = getNode(startingPoint.path);
 
       if (node != null) {
-        if (startingPoint != indices.last) {
-          indices.add(startingPoint);
+        if (startingPoint != _indices.last) {
+          _indices.add(startingPoint);
         }
         if (node.value is List && node.value.isNotEmpty && node.expanded) {
           var treePath = TreePath(List.from(startingPoint.path)..add(0));
@@ -297,7 +298,7 @@ class _JsonWidgetState extends State<JsonWidget>
   /// Modifies the indices on node change.
   ///
   /// If expansion happens, build needed indexes and insert into index.
-  /// (handled by [fillIndices])
+  /// (handled by [_fillIndices])
   /// If contraction happens, just drop after the node where the index/path
   /// is longer than the next sibling/parent.
   ///
@@ -313,42 +314,73 @@ class _JsonWidgetState extends State<JsonWidget>
     if (!expanded) {
       // Drop indices higher that this index but lower than the next sibling.
       int? removeTo;
-      for (int i = index + 1; i < indices.length; i++) {
-        if (indices[i].path.length <= nodePath.path.length) {
+      for (int i = index + 1; i < _indices.length; i++) {
+        if (_indices[i].path.length <= nodePath.path.length) {
           removeTo = i;
           break;
         }
       }
       if (removeTo != null) {
-        indices.removeRange(math.min(indices.length, index + 1), removeTo);
+        _indices.removeRange(math.min(_indices.length, index + 1), removeTo);
       } else {
-        indices.removeRange(
-            math.min(indices.length, index + 1), indices.length);
+        _indices.removeRange(
+            math.min(_indices.length, index + 1), _indices.length);
       }
     } else {
       // Re-insert children indices after the parent.
-      if (index + 1 < indices.length) {
-        indices.insertAll(
-            index + 1, node.getSubIndices(nodePath, indices[index + 1]));
+      if (index + 1 < _indices.length) {
+        _indices.insertAll(
+            index + 1, node.getSubIndices(nodePath, _indices[index + 1]));
       }
     }
   }
 
+  /// Returns the root node.
+  ///
+  /// See also:
+  /// * [getNodePath]
+  /// * [getNodeByPath]
+  JsonNode get rootNode => _rootNode;
+
+  /// Returns the max depth of the current json.
+  int get maxDepth => _maxDepth;
+
+  /// Retrieves the indexed path of a node.
+  ///
+  /// See also:
+  /// * [getNode]
+  TreePath getNodePath(int index) => _indices[index];
+
+  /// Retrieves a node via its path, starting from the root node.
+  ///
+  /// {@template node.getNodeByPath}
+  /// Example path: `[0, 15, 3, 5]`
+  ///
+  /// Which gets resolved like this:
+  /// * Take the nought (0) element from the starting node.
+  /// * Then take its 15th child and use it as new node.
+  /// * Then take its 3rd child and again use it as new node.
+  /// * Finally take its 5th child.
+  /// {@endtemplate}
+  ///
+  /// See also:
+  /// * [getNodePath]
+  /// * [TreePath]
   JsonNode? getNode(List<int> path) {
-    return getNodeByPath(JsonNode(value: [root], type: ValueType.array), path);
+    return getNodeByPath(
+        JsonNode(value: [_rootNode], type: ValueType.array), path);
   }
 
   /// Retrieves a node via its path.
   ///
-  /// Example index: [0, 15, 3, 5]
+  /// {@macro node.getNodeByPath}
   ///
-  /// Which gets resolved like this:
-  /// * Take the nought (0) element from the top node (root).
-  /// * Then take its 15th child and use it as new node.
-  /// * Then take its 3rd child and again use it as new node.
-  /// * Finally take its 5th child.
-  static JsonNode? getNodeByPath(JsonNode root, List<int> path) {
-    var node = root;
+  /// See also:
+  /// * [rootNode]
+  /// * [getNode]
+  /// * [TreePath]
+  JsonNode? getNodeByPath(JsonNode startingNode, List<int> path) {
+    var node = startingNode;
     for (int index in path) {
       if (node.value is List && index < node.value.length) {
         node = node.value[index];
@@ -368,7 +400,7 @@ class _JsonWidgetState extends State<JsonWidget>
         fontWeight: widget.fontWeight,
       ),
       child: FutureBuilder(
-        future: future,
+        future: _processingFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting ||
               snapshot.hasError) {
@@ -394,7 +426,7 @@ class _JsonWidgetState extends State<JsonWidget>
                 child: SizedBox(
                   width: math.max(
                       constraints.maxWidth,
-                      widget.nodeIndent * maxDepth +
+                      widget.nodeIndent * _maxDepth +
                           widget.additionalLeafIndent +
                           750),
                   child: CustomScrollView(
@@ -422,12 +454,12 @@ class _JsonWidgetState extends State<JsonWidget>
 
   Widget? _buildNode(BuildContext context, int index) {
     // Fill indices until given index.
-    fillIndices(index);
-    if (index >= indices.length) {
+    _fillIndices(index);
+    if (index >= _indices.length) {
       return null;
     }
     // Retrieve node via indices.
-    final TreePath nodePath = indices[index];
+    final TreePath nodePath = getNodePath(index);
     JsonNode node = getNode(nodePath.path)!;
 
     return JsonNodeWidget(
