@@ -170,18 +170,20 @@ class JsonNodeWidget extends StatelessWidget {
             : null,
         onDoubleTap: !isHidden ? onDoubleTap : null,
         onLongPress: !isHidden ? onLongPress : null,
-        child: ConstrainedBox(
-          constraints: BoxConstraints(minHeight: minHeight),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 8.0,
-            ),
-            child: Row(
-              children: [
-                if (node.hasChildren) node.expanded ? expandIcon : collapseIcon,
-                Expanded(child: child),
-              ],
-            ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 8.0,
+          ),
+          child: Row(
+            children: [
+              if (node.hasChildren) node.expanded ? expandIcon : collapseIcon,
+              Expanded(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: minHeight),
+                  child: child,
+                ),
+              ),
+            ],
           ),
         ),
       ),
