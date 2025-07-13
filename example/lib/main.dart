@@ -30,6 +30,9 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   late final JsonController _controller;
+  final jsonObject = json.decode(jsonString);
+
+  int? hoveredIndex;
 
   @override
   void initState() {
@@ -65,13 +68,103 @@ class _MyHomePageState extends State<MyHomePage> {
           Expanded(
             child: JsonWidget(
               controller: _controller,
-              json: json.decode(jsonString),
+              json: jsonObject,
               initialExpandDepth: 2,
               hiddenKeys: const ["hiddenField"],
+              nodeBuilder: (context, index, node, child) {
+                List<Widget> trailingWidgets = [];
+
+                if (index == 0) {
+                  trailingWidgets.add(
+                    buildTrailingWidget(
+                      context,
+                      const Text("Root"),
+                    ),
+                  );
+                }
+
+                if (node.type == ValueType.bool) {
+                  trailingWidgets.add(
+                    buildTrailingWidget(
+                      context,
+                      const Icon(Icons.toggle_off, size: 16),
+                    ),
+                  );
+                }
+
+                if ("city" == node.key) {
+                  trailingWidgets.add(
+                    buildTrailingWidget(
+                      context,
+                      const Icon(Icons.location_city, size: 16),
+                    ),
+                  );
+                }
+
+                if ("email" == node.key) {
+                  trailingWidgets.add(
+                    buildTrailingWidget(
+                      context,
+                      const Icon(Icons.alternate_email, size: 16),
+                    ),
+                  );
+                }
+
+                if ("price" == node.key) {
+                  trailingWidgets.add(
+                    buildTrailingWidget(
+                      context,
+                      const Icon(Icons.euro, size: 16),
+                    ),
+                  );
+                }
+
+                if (hoveredIndex == index) {
+                  trailingWidgets.add(
+                    buildTrailingWidget(
+                      context,
+                      const SizedBox.square(dimension: 5),
+                      color: Theme.of(context).colorScheme.primaryContainer,
+                    ),
+                  );
+                }
+
+                return MouseRegion(
+                  onHover: (event) {
+                    if (hoveredIndex != index) {
+                      setState(() => hoveredIndex = index);
+                    }
+                  },
+                  onExit: (event) {
+                    if (hoveredIndex != null) {
+                      setState(() => hoveredIndex = null);
+                    }
+                  },
+                  child: Row(
+                    children: [child, ...trailingWidgets],
+                  ),
+                );
+              },
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget buildTrailingWidget(
+    BuildContext context,
+    Widget child, {
+    Color? color,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(left: 8.0),
+      decoration: BoxDecoration(
+        color: color ?? Theme.of(context).colorScheme.secondaryContainer,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      padding: const EdgeInsets.all(4),
+      child: child,
     );
   }
 
@@ -85,6 +178,8 @@ class _MyHomePageState extends State<MyHomePage> {
 const String jsonString = """
 {
   "id": 1,
+  "oldId": null,
+  "active": true,
   "name": "John Doe",
   "email": "johndoe@example.com",
   "phone": "+1-202-555-0123",
@@ -94,6 +189,7 @@ const String jsonString = """
     "state": "CA",
     "zip": "12345"
   },
+  "aliases": [],
   "orders": [
     {
       "id": 1001,
