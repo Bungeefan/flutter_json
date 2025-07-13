@@ -30,7 +30,6 @@ class JsonParser {
         key: key,
         value: null,
         type: ValueType.none,
-        expanded: initialDepth == -1 || depth < initialDepth,
         depth: depth,
       );
     } else if (json is num) {
@@ -38,7 +37,6 @@ class JsonParser {
         key: key,
         value: json,
         type: ValueType.num,
-        expanded: initialDepth == -1 || depth < initialDepth,
         depth: depth,
       );
     } else if (json is bool) {
@@ -46,7 +44,6 @@ class JsonParser {
         key: key,
         value: json,
         type: ValueType.bool,
-        expanded: initialDepth == -1 || depth < initialDepth,
         depth: depth,
       );
     } else if (json is Iterable || json is Map) {
@@ -80,7 +77,6 @@ class JsonParser {
         key: key,
         value: json.toString(),
         type: ValueType.string,
-        expanded: initialDepth == -1 || depth < initialDepth,
         depth: depth,
       );
     }

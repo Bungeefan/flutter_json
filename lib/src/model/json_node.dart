@@ -15,7 +15,9 @@ class JsonNode {
     required this.type,
     this.expanded = false,
     this.depth = 0,
-  });
+  }) {
+    assert(!expanded || isExpandable, "Non-expandable node cannot be expanded");
+  }
 
   /// Whether this is a root node.
   bool get isRoot => key == null;
