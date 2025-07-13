@@ -178,8 +178,7 @@ class JsonWidgetState extends State<JsonWidget>
   @override
   void initState() {
     super.initState();
-    widget.controller?.expandNotifier.addListener(expandAll);
-    widget.controller?.collapseNotifier.addListener(collapseAll);
+    _handleControllerChange(null, newController: widget.controller);
     _processJson();
   }
 
@@ -187,10 +186,10 @@ class JsonWidgetState extends State<JsonWidget>
   void didUpdateWidget(covariant JsonWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.controller != oldWidget.controller) {
-      widget.controller?.expandNotifier.removeListener(expandAll);
-      widget.controller?.collapseNotifier.removeListener(collapseAll);
-      widget.controller?.expandNotifier.addListener(expandAll);
-      widget.controller?.collapseNotifier.addListener(collapseAll);
+      _handleControllerChange(
+        oldWidget.controller,
+        newController: widget.controller,
+      );
     }
     if (!const DeepCollectionEquality().equals(widget.json, oldWidget.json)) {
       _processJson();
@@ -199,9 +198,18 @@ class JsonWidgetState extends State<JsonWidget>
 
   @override
   void dispose() {
-    widget.controller?.expandNotifier.removeListener(expandAll);
-    widget.controller?.collapseNotifier.removeListener(collapseAll);
+    _scrollController.dispose();
+    _handleControllerChange(widget.controller);
     super.dispose();
+  }
+
+  void _handleControllerChange(JsonController? oldController,
+      {JsonController? newController}) {
+    oldController?.expandNotifier.removeListener(expandAll);
+    oldController?.collapseNotifier.removeListener(collapseAll);
+
+    newController?.expandNotifier.addListener(expandAll);
+    newController?.collapseNotifier.addListener(collapseAll);
   }
 
   /// Collects all children and updates the expanded state.
