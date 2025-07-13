@@ -192,7 +192,7 @@ class _JsonWidgetState extends State<JsonWidget>
       widget.controller?.expandNotifier.addListener(_expandAll);
       widget.controller?.collapseNotifier.addListener(_collapseAll);
     }
-    if (widget.json != oldWidget.json) {
+    if (!const DeepCollectionEquality().equals(widget.json, oldWidget.json)) {
       _processJson();
     }
   }
