@@ -114,6 +114,9 @@ class JsonWidget extends StatefulWidget {
   /// {@macro node.hiddenColor}
   final Color hiddenColor;
 
+  /// {@macro node.hiddenTextColor}
+  final Color hiddenTextColor;
+
   /// {@macro node.nodeBuilder}
   final JsonNodeWidgetBuilder? nodeBuilder;
 
@@ -149,6 +152,7 @@ class JsonWidget extends StatefulWidget {
     this.objectColor = Colors.grey,
     this.noneColor = Colors.grey,
     this.hiddenColor = const Color(0xFFBB5BC3),
+    this.hiddenTextColor = Colors.white,
     this.nodeBuilder,
     this.loadingBuilder,
     this.errorBuilder,
@@ -452,6 +456,7 @@ class _JsonWidgetState extends State<JsonWidget>
       objectColor: widget.objectColor,
       noneColor: widget.noneColor,
       hiddenColor: widget.hiddenColor,
+      hiddenTextColor: widget.hiddenTextColor,
       nodeBuilder: widget.nodeBuilder,
     );
   }

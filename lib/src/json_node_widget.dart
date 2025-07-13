@@ -209,11 +209,11 @@ class JsonNodeWidget extends StatelessWidget {
           vertical: 3,
           horizontal: 6,
         ),
-        child: const Text(
+        child: Text(
           "Hidden",
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: Colors.white,
+            color: hiddenTextColor,
             fontWeight: FontWeight.w500,
           ),
         ),
