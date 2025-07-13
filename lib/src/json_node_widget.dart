@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 
+import 'json_widget.dart';
 import 'model/json_node.dart';
 import 'model/value_type.dart';
 
 class JsonNodeWidget extends StatelessWidget {
+  /// The respective index.
+  final int index;
+
   /// The model to build.
   final JsonNode node;
 
@@ -90,8 +94,20 @@ class JsonNodeWidget extends StatelessWidget {
   /// {@endtemplate}
   final Color hiddenColor;
 
+  /// {@template node.hiddenTextColor}
+  /// The color used for the "hidden" text
+  /// when this key is specified in [hiddenKeys].
+  /// {@endtemplate}
+  final Color hiddenTextColor;
+
+  /// {@template node.nodeBuilder}
+  /// A builder to wrap nodes.
+  /// {@endtemplate}
+  final JsonNodeWidgetBuilder? nodeBuilder;
+
   const JsonNodeWidget({
     super.key,
+    required this.index,
     required this.node,
     required this.hiddenKeys,
     required this.onToggle,
@@ -110,27 +126,43 @@ class JsonNodeWidget extends StatelessWidget {
     required this.objectColor,
     required this.noneColor,
     required this.hiddenColor,
+    required this.hiddenTextColor,
+    this.nodeBuilder,
   });
 
   @override
   Widget build(BuildContext context) {
-    String? key = _describeKey(node);
+    String? key = node.describeKey;
 
     double depthPadding = nodeIndent * node.depth;
-    if (!node.isExpandable && node.key != null) {
+    if (!node.isRoot && !node.hasChildren) {
       depthPadding += additionalLeafIndent;
     }
-
-    bool allowExpand =
-        node.isExpandable && node.value is List && node.value.length > 0;
 
     bool isHidden = node.key is String &&
         hiddenKeys.any((e) => e == node.key?.toLowerCase());
 
+    Widget child = Text.rich(
+      TextSpan(
+        children: [
+          if (key != null)
+            TextSpan(
+              text: key,
+              style: TextStyle(
+                color: keyColor,
+              ),
+            ),
+          !isHidden ? buildValueWidget() : buildHiddenValueWidget(),
+        ],
+      ),
+    );
+
+    child = nodeBuilder?.call(context, index, node, child) ?? child;
+
     return Padding(
       padding: EdgeInsets.only(left: depthPadding),
       child: InkWell(
-        onTap: allowExpand
+        onTap: node.hasChildren
             ? () {
                 node.expanded = !node.expanded;
                 onToggle.call(node.expanded);
@@ -146,60 +178,8 @@ class JsonNodeWidget extends StatelessWidget {
             ),
             child: Row(
               children: [
-                if (allowExpand) node.expanded ? expandIcon : collapseIcon,
-                Expanded(
-                  child: isHidden
-                      ? Row(
-                          children: [
-                            if (key != null)
-                              Text(
-                                key,
-                                style: TextStyle(
-                                  color: keyColor,
-                                ),
-                              ),
-                            Container(
-                              decoration: BoxDecoration(
-                                color: hiddenColor,
-                                borderRadius: BorderRadius.circular(5),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 3,
-                                horizontal: 6,
-                              ),
-                              child: const Text(
-                                "Hidden",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                          ],
-                        )
-                      : Text.rich(
-                          TextSpan(
-                            children: [
-                              if (key != null)
-                                TextSpan(
-                                  text: key,
-                                  style: TextStyle(
-                                    color: keyColor,
-                                  ),
-                                ),
-                              TextSpan(
-                                text: _describeValue(node),
-                                style: TextStyle(
-                                  color: _getColor(node.type),
-                                ),
-                              ),
-                            ],
-                          ),
-                          // maxLines: 1,
-                          // overflow: TextOverflow.ellipsis,
-                        ),
-                ),
+                if (node.hasChildren) node.expanded ? expandIcon : collapseIcon,
+                Expanded(child: child),
               ],
             ),
           ),
@@ -208,35 +188,37 @@ class JsonNodeWidget extends StatelessWidget {
     );
   }
 
-  static String? _describeKey(JsonNode node) {
-    return node.key != null ? "${node.key}: " : null;
+  InlineSpan buildValueWidget() {
+    return TextSpan(
+      text: node.describeValue,
+      style: TextStyle(
+        color: _getColor(node.type),
+      ),
+    );
   }
 
-  static String _describeValue(JsonNode node) {
-    if (node.value is! List) {
-      String value =
-          node.value is String ? '"${node.value}"' : node.value.toString();
-      return value;
-    } else {
-      List children = node.value;
-      if (node.type == ValueType.array) {
-        if (children.isEmpty) {
-          return "Array[0]";
-        } else {
-          dynamic child = children[0];
-          String type = child is JsonNode
-              ? child.type == ValueType.object
-                  ? "Object"
-                  : child.type.name
-              : child.runtimeType.toString();
-          return "Array<$type>[${children.length}]";
-        }
-      } else if (node.type == ValueType.object) {
-        return "Object";
-      } else {
-        return node.type.name;
-      }
-    }
+  InlineSpan buildHiddenValueWidget() {
+    return WidgetSpan(
+      alignment: PlaceholderAlignment.middle,
+      child: Container(
+        decoration: BoxDecoration(
+          color: hiddenColor,
+          borderRadius: BorderRadius.circular(5),
+        ),
+        padding: const EdgeInsets.symmetric(
+          vertical: 3,
+          horizontal: 6,
+        ),
+        child: const Text(
+          "Hidden",
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+    );
   }
 
   Color _getColor(ValueType type) {

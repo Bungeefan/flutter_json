@@ -17,10 +17,43 @@ class JsonNode {
     this.depth = 0,
   });
 
-  bool get isExpandable =>
-      [ValueType.array, ValueType.object].contains(type) &&
-      value is List &&
-      value.length > 0;
+  /// Whether this is a root node.
+  bool get isRoot => key == null;
+
+  /// Whether this node supports being expanded.
+  bool get isExpandable => [ValueType.array, ValueType.object].contains(type);
+
+  /// Whether this node is expandable and contains any children.
+  bool get hasChildren => isExpandable && value is List && value.isNotEmpty;
+
+  String? get describeKey {
+    return key != null ? "$key: " : null;
+  }
+
+  String get describeValue {
+    if (value is! List) {
+      return value is String ? '"$value"' : value.toString();
+    } else {
+      List children = value;
+      if (type == ValueType.array) {
+        if (children.isEmpty) {
+          return "Array[0]";
+        } else {
+          dynamic child = children[0];
+          String type = child is JsonNode
+              ? child.type == ValueType.object
+                  ? "Object"
+                  : child.type.name
+              : child.runtimeType.toString();
+          return "Array<$type>[${children.length}]";
+        }
+      } else if (type == ValueType.object) {
+        return "Object";
+      } else {
+        return type.name;
+      }
+    }
+  }
 
   dynamic toJson() {
     if (type == ValueType.object) {

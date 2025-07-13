@@ -11,6 +11,13 @@ import 'model/json_node.dart';
 import 'model/tree_path.dart';
 import 'model/value_type.dart';
 
+typedef JsonNodeWidgetBuilder = Widget Function(
+  BuildContext context,
+  int index,
+  JsonNode node,
+  Widget child,
+);
+
 typedef JsonErrorWidgetBuilder = Widget Function(
   BuildContext context,
   Object error,
@@ -107,6 +114,9 @@ class JsonWidget extends StatefulWidget {
   /// {@macro node.hiddenColor}
   final Color hiddenColor;
 
+  /// {@macro node.nodeBuilder}
+  final JsonNodeWidgetBuilder? nodeBuilder;
+
   /// A builder that specifies the widget shown while loading the json.
   final WidgetBuilder? loadingBuilder;
 
@@ -139,6 +149,7 @@ class JsonWidget extends StatefulWidget {
     this.objectColor = Colors.grey,
     this.noneColor = Colors.grey,
     this.hiddenColor = const Color(0xFFBB5BC3),
+    this.nodeBuilder,
     this.loadingBuilder,
     this.errorBuilder,
   }) : hiddenKeys = hiddenKeys.map((e) => e.toLowerCase()).toList();
@@ -416,6 +427,7 @@ class _JsonWidgetState extends State<JsonWidget>
     JsonNode node = getNode(nodePath.path)!;
 
     return JsonNodeWidget(
+      index: index,
       node: node,
       hiddenKeys: widget.hiddenKeys,
       onDoubleTap: widget.onDoubleTap != null
@@ -440,6 +452,7 @@ class _JsonWidgetState extends State<JsonWidget>
       objectColor: widget.objectColor,
       noneColor: widget.noneColor,
       hiddenColor: widget.hiddenColor,
+      nodeBuilder: widget.nodeBuilder,
     );
   }
 }
