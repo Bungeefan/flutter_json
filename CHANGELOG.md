@@ -1,3 +1,12 @@
+## 0.0.5
+
+* Added `nodeBuilder` parameter to allow wrapping individual nodes with custom widgets.
+* Fixed `minNodeHeight` (it is now applied more correctly).
+* Added `hiddenTextColor` parameter.
+* Improved JSON equals check to reduce possibly unnecessary JSON processing passes.
+* Fixed incorrect controller handling.
+* Added pub.dev `topics`.
+
 ## 0.0.4
 
 * Added optional `loadingBuilder` and `errorBuilder` to allow custom loading and error widgets.
