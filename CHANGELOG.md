@@ -1,3 +1,7 @@
+## 0.0.6
+
+* Fixed alignment regression after min height fix in `0.0.5`.
+
 ## 0.0.5
 
 * Added `nodeBuilder` parameter to allow wrapping individual nodes with custom widgets.

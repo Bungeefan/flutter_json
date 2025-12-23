@@ -1,6 +1,6 @@
 name: flutter_json
 description: Flutter package for rendering JSON data as an interactive hierarchical tree structure with customizable appearance and lazy rendering for improved performance.
-version: 0.0.5
+version: 0.0.6
 repository: "https://github.com/Bungeefan/flutter_json"
 topics:
   - json
