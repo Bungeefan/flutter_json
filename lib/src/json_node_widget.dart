@@ -180,7 +180,7 @@ class JsonNodeWidget extends StatelessWidget {
               Expanded(
                 child: ConstrainedBox(
                   constraints: BoxConstraints(minHeight: minHeight),
-                  child: child,
+                  child: Align(alignment: Alignment.centerLeft, child: child),
                 ),
               ),
             ],
