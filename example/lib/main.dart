@@ -43,9 +43,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("JSON Example"),
-      ),
+      appBar: AppBar(title: const Text("JSON Example")),
       body: Column(
         children: [
           Padding(
@@ -76,10 +74,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
                 if (index == 0) {
                   trailingWidgets.add(
-                    buildTrailingWidget(
-                      context,
-                      const Text("Root"),
-                    ),
+                    buildTrailingWidget(context, const Text("Root")),
                   );
                 }
 
@@ -140,9 +135,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       setState(() => hoveredIndex = null);
                     }
                   },
-                  child: Row(
-                    children: [child, ...trailingWidgets],
-                  ),
+                  child: Row(children: [child, ...trailingWidgets]),
                 );
               },
             ),
