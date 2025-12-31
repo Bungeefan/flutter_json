@@ -67,6 +67,7 @@ class JsonWidget extends StatefulWidget {
   ///
   /// -1 expands all nodes by default.
   final int initialExpandDepth;
+  final TextStyle? textStyle;
 
   /// Widget used by the node to display the expanded state.
   final Widget expandIcon;
@@ -137,6 +138,7 @@ class JsonWidget extends StatefulWidget {
     List<String> hiddenKeys = const [],
     this.onDoubleTap,
     this.onLongPress,
+    this.textStyle,
     this.initialExpandDepth = -1,
     this.expandIcon = const Icon(Icons.keyboard_arrow_down),
     this.collapseIcon = const Icon(Icons.keyboard_arrow_right),
@@ -403,10 +405,11 @@ class JsonWidgetState extends State<JsonWidget>
   Widget build(BuildContext context) {
     super.build(context);
     return DefaultTextStyle.merge(
-      style: TextStyle(
-        fontStyle: widget.fontStyle,
-        fontWeight: widget.fontWeight,
-      ),
+      style: widget.textStyle
+        ?..copyWith(
+          fontWeight: widget.fontWeight,
+          fontStyle: widget.fontStyle,
+        ),
       child: FutureBuilder(
         future: _processingFuture,
         builder: (context, snapshot) {
