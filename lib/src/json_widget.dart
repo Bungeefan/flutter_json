@@ -166,11 +166,11 @@ class JsonWidget extends StatefulWidget {
 class JsonWidgetState extends State<JsonWidget>
     with AutomaticKeepAliveClientMixin {
   final ScrollController _scrollController = ScrollController();
-  late Future<void> _processingFuture;
+  Future<void> _processingFuture = Future.value();
   final List<TreePath> _indices = [];
 
-  late JsonNode _rootNode;
-  late int _maxDepth;
+  JsonNode? _rootNode;
+  int? _maxDepth;
 
   @override
   bool get wantKeepAlive => true;
@@ -217,7 +217,8 @@ class JsonWidgetState extends State<JsonWidget>
   /// Searches for the first collapsed node
   /// and drops every index after this node.
   void expandAll() {
-    List<JsonNode> list = _rootNode.collectChildren();
+    if (_rootNode == null) return;
+    List<JsonNode> list = _rootNode!.collectChildren();
     bool firstIndexFound = false;
     for (int i = 0; i < list.length; i++) {
       var node = list[i];
@@ -236,13 +237,16 @@ class JsonWidgetState extends State<JsonWidget>
   ///
   /// This method simply drops all indices.
   void collapseAll() {
-    _rootNode.collectChildren().forEach((node) => node.expanded = false);
+    if (_rootNode == null) return;
+    _rootNode!.collectChildren().forEach((node) => node.expanded = false);
     _indices.clear();
     setState(() {});
   }
 
   /// Processes the provided json.
   void _processJson() {
+    _rootNode = null;
+    _maxDepth = null;
     _indices.clear();
     _processingFuture = compute<Map<String, Object>, Map<String, dynamic>>(
       (args) => JsonParser().parseTree(args),
@@ -319,6 +323,7 @@ class JsonWidgetState extends State<JsonWidget>
     JsonNode node,
     bool expanded,
   ) {
+    if (_rootNode == null) return;
     if (!expanded) {
       // Drop indices higher that this index but lower than the next sibling.
       int? removeTo;
@@ -348,16 +353,16 @@ class JsonWidgetState extends State<JsonWidget>
   /// See also:
   /// * [getNodePath]
   /// * [getNodeByPath]
-  JsonNode get rootNode => _rootNode;
+  JsonNode? get rootNode => _rootNode;
 
   /// Returns the max depth of the current json.
-  int get maxDepth => _maxDepth;
+  int? get maxDepth => _maxDepth;
 
   /// Retrieves the indexed path of a node.
   ///
   /// See also:
   /// * [getNode]
-  TreePath getNodePath(int index) => _indices[index];
+  TreePath? getNodePath(int index) => _indices.elementAtOrNull(index);
 
   /// Retrieves a node via its path, starting from the root node.
   ///
@@ -434,7 +439,7 @@ class JsonWidgetState extends State<JsonWidget>
                 child: SizedBox(
                   width: math.max(
                       constraints.maxWidth,
-                      widget.nodeIndent * _maxDepth +
+                      widget.nodeIndent * (_maxDepth ?? 0) +
                           widget.additionalLeafIndent +
                           750),
                   child: CustomScrollView(
@@ -467,7 +472,7 @@ class JsonWidgetState extends State<JsonWidget>
       return null;
     }
     // Retrieve node via indices.
-    final TreePath nodePath = getNodePath(index);
+    final TreePath nodePath = getNodePath(index)!;
     JsonNode node = getNode(nodePath.path)!;
 
     return JsonNodeWidget(
