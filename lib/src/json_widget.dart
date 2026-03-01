@@ -348,6 +348,12 @@ class JsonWidgetState extends State<JsonWidget>
     }
   }
 
+  /// Returns the current processing future.
+  ///
+  /// See also:
+  /// * [rootNode] (for the result)
+  Future<void> get processingFuture => _processingFuture;
+
   /// Returns the root node.
   ///
   /// See also:
