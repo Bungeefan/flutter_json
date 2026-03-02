@@ -30,7 +30,11 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   late final JsonController _controller;
-  final jsonObject = json.decode(jsonString);
+  final List<dynamic> jsons = [
+    json.decode(jsonString),
+    json.decode(jsonString2),
+  ];
+  late var displayJson = jsons[0];
 
   int? hoveredIndex;
 
@@ -60,13 +64,28 @@ class _MyHomePageState extends State<MyHomePage> {
                   icon: const Icon(Icons.unfold_less),
                   label: const Text("Collapse All"),
                 ),
+                SegmentedButton(
+                  segments: [
+                    for (int i = 0; i < jsons.length; i++)
+                      ButtonSegment(
+                        value: jsons[i],
+                        label: Text("JSON ${i + 1}"),
+                      ),
+                  ],
+                  selected: {displayJson},
+                  onSelectionChanged: (newJsons) {
+                    setState(() {
+                      displayJson = newJsons.firstOrNull;
+                    });
+                  },
+                ),
               ],
             ),
           ),
           Expanded(
             child: JsonWidget(
               controller: _controller,
-              json: jsonObject,
+              json: displayJson,
               initialExpandDepth: 2,
               hiddenKeys: const ["hiddenField"],
               nodeBuilder: (context, index, node, child) {
@@ -221,3 +240,5 @@ const String jsonString = """
   "hiddenField": "This field will be hidden as well"
 }
 """;
+
+const String jsonString2 = "[$jsonString, $jsonString]";
