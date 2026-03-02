@@ -44,8 +44,8 @@ class JsonNode {
           dynamic child = children[0];
           String type = child is JsonNode
               ? child.type == ValueType.object
-                  ? "Object"
-                  : child.type.name
+                    ? "Object"
+                    : child.type.name
               : child.runtimeType.toString();
           return "Array<$type>[${children.length}]";
         }
@@ -59,14 +59,10 @@ class JsonNode {
 
   dynamic toJson() {
     if (type == ValueType.object) {
-      return {
-        for (var node in value) node.key: node,
-      };
+      return {for (var node in value) node.key: node};
     }
     if (type == ValueType.array) {
-      return [
-        for (var node in value) node,
-      ];
+      return [for (var node in value) node];
     }
     return value;
   }
@@ -109,10 +105,7 @@ class JsonNode {
   /// Collects indices from all sub nodes.
   ///
   /// This takes [expanded] into account!
-  List<TreePath> getSubIndices(
-    TreePath parentPath, [
-    TreePath? targetPath,
-  ]) {
+  List<TreePath> getSubIndices(TreePath parentPath, [TreePath? targetPath]) {
     List<TreePath> paths = [];
     if (value is List && expanded) {
       for (int i = 0; i < value.length; i++) {

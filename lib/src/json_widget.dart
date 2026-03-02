@@ -12,18 +12,16 @@ import 'model/json_node.dart';
 import 'model/tree_path.dart';
 import 'model/value_type.dart';
 
-typedef JsonNodeWidgetBuilder = Widget Function(
-  BuildContext context,
-  int index,
-  JsonNode node,
-  Widget child,
-);
+typedef JsonNodeWidgetBuilder =
+    Widget Function(
+      BuildContext context,
+      int index,
+      JsonNode node,
+      Widget child,
+    );
 
-typedef JsonErrorWidgetBuilder = Widget Function(
-  BuildContext context,
-  Object error,
-  StackTrace stackTrace,
-);
+typedef JsonErrorWidgetBuilder =
+    Widget Function(BuildContext context, Object error, StackTrace stackTrace);
 
 /// A widget that renders JSON data as an interactive hierarchical tree structure.
 ///
@@ -203,8 +201,10 @@ class JsonWidgetState extends State<JsonWidget>
     super.dispose();
   }
 
-  void _handleControllerChange(JsonController? oldController,
-      {JsonController? newController}) {
+  void _handleControllerChange(
+    JsonController? oldController, {
+    JsonController? newController,
+  }) {
     oldController?.expandNotifier.removeListener(expandAll);
     oldController?.collapseNotifier.removeListener(collapseAll);
 
@@ -248,19 +248,23 @@ class JsonWidgetState extends State<JsonWidget>
     _rootNode = null;
     _maxDepth = null;
     _indices.clear();
-    _processingFuture = compute<Map<String, Object>, Map<String, dynamic>>(
-      (args) => JsonParser().parseTree(args),
-      {
-        "json": widget.json,
-        "initialDepth": widget.initialExpandDepth,
-      },
-    ).then((value) {
-      _rootNode = value["tree"];
-      _maxDepth = value["maxDepth"];
-    }).catchError((error, stackTrace) {
-      log("Failed to compute json", error: error, stackTrace: stackTrace);
-      throw error;
-    });
+    _processingFuture =
+        compute<Map<String, Object>, Map<String, dynamic>>(
+              (args) => JsonParser().parseTree(args),
+              {"json": widget.json, "initialDepth": widget.initialExpandDepth},
+            )
+            .then((value) {
+              _rootNode = value["tree"];
+              _maxDepth = value["maxDepth"];
+            })
+            .catchError((error, stackTrace) {
+              log(
+                "Failed to compute json",
+                error: error,
+                stackTrace: stackTrace,
+              );
+              throw error;
+            });
   }
 
   /// Creates indices for the [JsonNode]s in [_rootNode].
@@ -337,13 +341,17 @@ class JsonWidgetState extends State<JsonWidget>
         _indices.removeRange(math.min(_indices.length, index + 1), removeTo);
       } else {
         _indices.removeRange(
-            math.min(_indices.length, index + 1), _indices.length);
+          math.min(_indices.length, index + 1),
+          _indices.length,
+        );
       }
     } else {
       // Re-insert children indices after the parent.
       if (index + 1 < _indices.length) {
         _indices.insertAll(
-            index + 1, node.getSubIndices(nodePath, _indices[index + 1]));
+          index + 1,
+          node.getSubIndices(nodePath, _indices[index + 1]),
+        );
       }
     }
   }
@@ -387,7 +395,9 @@ class JsonWidgetState extends State<JsonWidget>
   /// * [TreePath]
   JsonNode? getNode(List<int> path) {
     return getNodeByPath(
-        JsonNode(value: [_rootNode], type: ValueType.array), path);
+      JsonNode(value: [_rootNode], type: ValueType.array),
+      path,
+    );
   }
 
   /// Retrieves a node via its path.
@@ -426,46 +436,50 @@ class JsonWidgetState extends State<JsonWidget>
             Widget child = Center(
               child: snapshot.hasError
                   ? widget.errorBuilder?.call(
-                          context, snapshot.error!, snapshot.stackTrace!) ??
-                      const Text("Error while analyzing the json")
+                          context,
+                          snapshot.error!,
+                          snapshot.stackTrace!,
+                        ) ??
+                        const Text("Error while analyzing the json")
                   : widget.loadingBuilder?.call(context) ??
-                      const CircularProgressIndicator.adaptive(),
+                        const CircularProgressIndicator.adaptive(),
             );
             return child;
           }
 
-          return LayoutBuilder(builder: (context, constraints) {
-            return Scrollbar(
-              controller: _scrollController,
-              scrollbarOrientation: ScrollbarOrientation.bottom,
-              child: SingleChildScrollView(
-                physics: widget.physics,
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              return Scrollbar(
                 controller: _scrollController,
-                scrollDirection: Axis.horizontal,
-                child: SizedBox(
-                  width: math.max(
+                scrollbarOrientation: ScrollbarOrientation.bottom,
+                child: SingleChildScrollView(
+                  physics: widget.physics,
+                  controller: _scrollController,
+                  scrollDirection: Axis.horizontal,
+                  child: SizedBox(
+                    width: math.max(
                       constraints.maxWidth,
                       widget.nodeIndent * (_maxDepth ?? 0) +
                           widget.additionalLeafIndent +
-                          750),
-                  child: CustomScrollView(
-                    primary: widget.primary,
-                    physics: widget.physics,
-                    // https://github.com/flutter/flutter/issues/52681
-                    // scrollBehavior: ScrollConfiguration.of(context)
-                    //     .copyWith(scrollbars: true),
-                    slivers: [
-                      SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          _buildNode,
+                          750,
+                    ),
+                    child: CustomScrollView(
+                      primary: widget.primary,
+                      physics: widget.physics,
+                      // https://github.com/flutter/flutter/issues/52681
+                      // scrollBehavior: ScrollConfiguration.of(context)
+                      //     .copyWith(scrollbars: true),
+                      slivers: [
+                        SliverList(
+                          delegate: SliverChildBuilderDelegate(_buildNode),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            );
-          });
+              );
+            },
+          );
         },
       ),
     );

@@ -139,7 +139,8 @@ class JsonNodeWidget extends StatelessWidget {
       depthPadding += additionalLeafIndent;
     }
 
-    bool isHidden = node.key is String &&
+    bool isHidden =
+        node.key is String &&
         hiddenKeys.any((e) => e == node.key?.toLowerCase());
 
     Widget child = Text.rich(
@@ -148,9 +149,7 @@ class JsonNodeWidget extends StatelessWidget {
           if (key != null)
             TextSpan(
               text: key,
-              style: TextStyle(
-                color: keyColor,
-              ),
+              style: TextStyle(color: keyColor),
             ),
           !isHidden ? buildValueWidget() : buildHiddenValueWidget(),
         ],
@@ -171,9 +170,7 @@ class JsonNodeWidget extends StatelessWidget {
         onDoubleTap: !isHidden ? onDoubleTap : null,
         onLongPress: !isHidden ? onLongPress : null,
         child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 8.0,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: Row(
             children: [
               if (node.hasChildren) node.expanded ? expandIcon : collapseIcon,
@@ -193,9 +190,7 @@ class JsonNodeWidget extends StatelessWidget {
   InlineSpan buildValueWidget() {
     return TextSpan(
       text: node.describeValue,
-      style: TextStyle(
-        color: _getColor(node.type),
-      ),
+      style: TextStyle(color: _getColor(node.type)),
     );
   }
 
@@ -207,17 +202,11 @@ class JsonNodeWidget extends StatelessWidget {
           color: hiddenColor,
           borderRadius: BorderRadius.circular(5),
         ),
-        padding: const EdgeInsets.symmetric(
-          vertical: 3,
-          horizontal: 6,
-        ),
+        padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 6),
         child: Text(
           "Hidden",
           textAlign: TextAlign.center,
-          style: TextStyle(
-            color: hiddenTextColor,
-            fontWeight: FontWeight.w500,
-          ),
+          style: TextStyle(color: hiddenTextColor, fontWeight: FontWeight.w500),
         ),
       ),
     );

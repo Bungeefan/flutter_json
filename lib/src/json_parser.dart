@@ -8,10 +8,7 @@ class JsonParser {
 
   Future<Map<String, dynamic>> parseTree(Map<String, dynamic> args) async {
     var tree = _buildTree(args["initialDepth"], null, args["json"]);
-    return {
-      "tree": tree,
-      "maxDepth": maxDepth,
-    };
+    return {"tree": tree, "maxDepth": maxDepth};
   }
 
   JsonNode _buildTree(
@@ -33,12 +30,7 @@ class JsonParser {
         depth: depth,
       );
     } else if (json is num) {
-      node = JsonNode(
-        key: key,
-        value: json,
-        type: ValueType.num,
-        depth: depth,
-      );
+      node = JsonNode(key: key, value: json, type: ValueType.num, depth: depth);
     } else if (json is bool) {
       node = JsonNode(
         key: key,
@@ -53,16 +45,17 @@ class JsonParser {
         type = ValueType.array;
         nodes.addAll(
           json.toList().mapIndexed(
-                (index, element) =>
-                    _buildTree(initialDepth, index, element, depth + 1),
-              ),
+            (index, element) =>
+                _buildTree(initialDepth, index, element, depth + 1),
+          ),
         );
       } else {
         assert(json is Map);
         type = ValueType.object;
         for (MapEntry entry in json.entries) {
-          nodes
-              .add(_buildTree(initialDepth, entry.key, entry.value, depth + 1));
+          nodes.add(
+            _buildTree(initialDepth, entry.key, entry.value, depth + 1),
+          );
         }
       }
       node = JsonNode(

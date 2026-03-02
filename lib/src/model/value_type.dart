@@ -1,8 +1,1 @@
-enum ValueType {
-  num,
-  string,
-  bool,
-  array,
-  object,
-  none,
-}
+enum ValueType { num, string, bool, array, object, none }
