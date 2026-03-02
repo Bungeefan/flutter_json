@@ -1,3 +1,16 @@
+## 0.1.0
+
+* Fixed possible concurrent modifications to the root node and indices during processing.
+  Fixes [#5](https://github.com/Bungeefan/flutter_json/issues/5).
+* Added getter for `processingFuture`.
+* Updated/corrected sdk constraints.
+
+### Breaking changes:
+
+* `JsonWidgetState.rootNode` getter is now nullable.
+* `JsonWidgetState.maxDepth` getter is now nullable.
+* `JsonWidgetState.getNodePath(int index)` method is now nullable.
+
 ## 0.0.6
 
 * Fixed alignment regression after min height fix in `0.0.5`.
