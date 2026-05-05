@@ -49,10 +49,11 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(title: const Text("JSON Example")),
       body: Column(
+        crossAxisAlignment: .stretch,
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Row(
+            child: Wrap(
               children: [
                 TextButton.icon(
                   onPressed: () => _controller.expandAllNodes(),
