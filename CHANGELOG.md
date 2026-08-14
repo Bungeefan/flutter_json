@@ -1,3 +1,7 @@
+## 0.2.0
+
+* Migrated to [`material_ui`](https://pub.dev/packages/material_ui).
+
 ## 0.1.0
 
 * Fixed possible concurrent modifications to the root node and indices during processing.
